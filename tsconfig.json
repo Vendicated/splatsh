@@ -1,0 +1,13 @@
+{
+  "extends": "@splatterxl/tsconfig",
+  "compilerOptions": {
+    "outDir": "./build",
+    "resolveJsonModule": false,
+    "diagnostics": false,
+    "extendedDiagnostics": false,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "include": ["./src/**/*"]
+}
