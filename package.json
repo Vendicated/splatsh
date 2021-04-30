@@ -28,7 +28,6 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "chalk": "^4.1.1",
-    "jvar": "github:Zytekaron/jvar.js"
+    "chalk": "^4.1.1"
   }
 }
