@@ -2,7 +2,8 @@ import { InbuiltCommand } from "../classes";
 import { ExitCodes } from "../constants";
 
 export default class Export extends InbuiltCommand {
-  public usage = "export KEY=VALUE...";
+  public readonly usage = "export KEY=VALUE...";
+
   public async invoke() {
     if (!this.args.length)
       return {

@@ -7,7 +7,7 @@
     "clean": "rm -rf dist",
     "format": "prettier -w src",
     "format-staged": "precise-commits",
-    "lint": "eslint ./src/**/*.ts",
+    "lint": "eslint src --ext .ts",
     "lint:fix": "yarn lint --fix",
     "prepare": "echo \"Initialising git hooks...\" && git config --local core.hooksPath .hooks/",
     "test": "yarn build && yarn lint",

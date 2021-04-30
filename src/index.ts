@@ -4,10 +4,11 @@ import { CommandHandler } from "./handleCommand";
 import { sessionVariables } from "./sessionVariables";
 import { parseArgs, printf, printfErr, prompt } from "./util";
 
-CommandHandler.prepare().then(() => {
+void CommandHandler.prepare().then(() => {
   printf(chalk`Welcome to {greenBright Splatsh}, the {green Node.js}-based terminal client for everyone!\n`);
   promptShell("~");
 });
+
 let typing = "";
 
 function promptShell(loc?: string, code?: number | NodeJS.Signals) {
@@ -19,13 +20,13 @@ async function handleTypedData() {
   try {
     args = parseArgs(typing);
   } catch (err) {
-    printf(err + "\n");
+    printf(`${err}\n`);
     return promptShell("~", ExitCodes.ERROR);
   }
 
   typing = "";
 
-  let commandVariables = {} as Record<string, string>;
+  const commandVariables = {} as Record<string, string>;
 
   while (args.length && /\w+=[^\s]+/.test(args[0])) {
     const [key, value] = args.shift().split("=");
@@ -48,7 +49,7 @@ async function handleTypedData() {
 process.stdin.on("data", data => {
   if (data.toString() === "\n") return promptShell("~", 0);
   typing = data.toString().slice(0, -1) || "";
-  handleTypedData();
+  void handleTypedData();
 });
 
 process.on("SIGSEGV", () => {
