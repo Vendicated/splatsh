@@ -4,11 +4,11 @@ import { format } from "util";
 import { sessionVariables } from "./sessionVariables";
 
 export function prompt(hook: Function, context = "") {
-  hook(context + "$> ");
+  hook(`${context} $> `);
 }
 
 export async function findInPath(command: string): Promise<string | null> {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const { PATH } = process.env;
     if (!PATH) reject("No path specified");
 
