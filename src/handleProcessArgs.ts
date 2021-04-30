@@ -45,19 +45,19 @@ function parseProcessFlags(str: string) {
   return result;
 }
 
-export function handleArgs(args: typeof process.argv) {
+export async function handleArgs(args: typeof process.argv) {
   const str = args.join(" ");
+  if (!str) return;
   const flags = parseProcessFlags(str);
   if (flags.c) {
-    void CommandHandler.invoke(parseArgs(str.slice(str.indexOf("-c") + 2)), {}).then(v => {
+    await CommandHandler.invoke(parseArgs(str.slice(str.indexOf("-c") + 2)), {}).then(v => {
       if (v.code !== ExitCodes.SUCCESS) {
         printfErr(v.out);
         process.exit(v.code as ExitCodes);
       } else printf(v.out);
       process.exit();
     });
-  }
-  if (flags.h || flags.help) {
+  } else if (flags.h || flags.help) {
     printf(chalk`{greenBright {bold Splatsh}}
 The {green Node.js}-based shell for everyone!
 
@@ -70,16 +70,44 @@ The {green Node.js}-based shell for everyone!
   -c\t\t\tExecutes arbitary Splatsh code
 `);
     process.exit(0);
+  } else {
+    const cmd = args.shift();
+    const res = await CommandHandler.invoke([cmd, ...args], {});
+    if (res.code !== ExitCodes.SUCCESS) printfErr(res.out);
+    else printf(res.out);
+    process.exit(res.code as ExitCodes);
   }
 }
 
-handleArgs(process.argv.slice(2));
-
-export function handleStdin(stdin: typeof process.stdin) {
+export async function handleStdin(stdin: typeof process.stdin) {
   if (stdin.isTTY) return;
-  else {
-    const data = readFileSync(0, "utf8").split("\n");
+  try {
+    const data = readFileSync(0, "utf-8").split("(\n|&&|\\|\\|)");
+    if (!data) return;
+    let stdout = "",
+      // TODO: support stderr differently than stdout
+      // stderr = "",
+      code = 0;
+    for (let ind = 0; ind < data.length; ind++) {
+      const cmd = data[ind];
+      const res = await CommandHandler.invoke(parseArgs(cmd), {});
+      code = res.code as ExitCodes;
+      stdout += res.out;
+      if (res.code !== ExitCodes.SUCCESS) {
+        printfErr(stdout);
+        process.exit(code);
+      } else if (data.lastIndexOf(cmd) === ind) {
+        printf(stdout);
+        process.exit(code);
+      }
+    }
+  } catch {
+    comment: {
+      break comment;
+    }
   }
 }
 
-handleStdin(process.stdin);
+export default handleStdin(process.stdin).then(() => {
+  return handleArgs(process.argv.slice(2) || []);
+});

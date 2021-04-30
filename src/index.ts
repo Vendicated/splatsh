@@ -3,10 +3,22 @@ import { ExitCodes } from "./constants";
 import { CommandHandler } from "./handleCommand";
 import { sessionVariables } from "./sessionVariables";
 import { parseArgs, printf, printfErr, prompt } from "./util";
+import resolveBeforeContinuing from "./handleProcessArgs";
 
-void CommandHandler.prepare().then(() => {
-  printf(chalk`Welcome to {greenBright Splatsh}, the {green Node.js}-based terminal client for everyone!\n`);
-  promptShell("~");
+let occupied = true;
+export function useOccupiedState(): [boolean, (val: boolean) => boolean] {
+  function setOccupied(val: boolean) {
+    return (occupied = val ?? !occupied);
+  }
+  return [occupied, setOccupied];
+}
+
+void resolveBeforeContinuing.then(() => {
+  void CommandHandler.prepare().then(() => {
+    printf(chalk`Welcome to {greenBright Splatsh}, the {green Node.js}-based terminal client for everyone!\n`);
+    promptShell("~");
+    occupied = false;
+  });
 });
 
 let typing = "";
@@ -16,6 +28,8 @@ function promptShell(loc?: string, code?: number | NodeJS.Signals) {
 }
 
 async function handleTypedData() {
+  const [, setOccupied] = useOccupiedState();
+  setOccupied(true);
   let args;
   try {
     args = parseArgs(typing);
@@ -41,20 +55,16 @@ async function handleTypedData() {
   }
 
   const result = await CommandHandler.invoke(args, commandVariables);
-
   printf(result.out);
+  setOccupied(false);
   promptShell("~", result.code);
 }
 
 process.stdin.on("data", data => {
+  if (occupied) return;
   if (data.toString() === "\n") return promptShell("~", 0);
   typing = data.toString().slice(0, -1) || "";
   void handleTypedData();
-});
-
-process.on("SIGSEGV", () => {
-  printf("Segmentation fault. Killing process.\n");
-  process.exit(7);
 });
 
 process.on("SIGINT", () => {
