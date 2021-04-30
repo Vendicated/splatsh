@@ -3,28 +3,33 @@ import { CommandResult, PotentialPromise } from "./types";
 import { resolveVariable } from "./util";
 
 export class Handler {
-  static invoke(..._: any[]) {
-    throw new Error("not implemented");
+  public static invoke(..._args: any[]): PotentialPromise<void> {
+    throw new Error("Not implemented");
   }
 }
 
-export abstract class InbuiltCommand<T extends object = Record<string, Function>> {
-  constructor() {}
-  flags: T;
-  variables: Record<string, string>;
-  flagAliases: Record<string, keyof T>;
-  usage?: string;
-  args: string[];
-  context: typeof CommandHandler;
-  parsedFlags: Record<string, any>;
-  getVariable(key: string) {
+/* TODO: what should these types be? */
+export abstract class InbuiltCommand<
+  Flags extends Record<string, unknown> = Record<string, (...args: unknown[]) => unknown>
+> {
+  public abstract readonly usage: string;
+  public flags: Flags;
+  public variables: Record<string, string>;
+  public flagAliases: Record<string, keyof Flags>;
+  public args: string[];
+  public context: typeof CommandHandler;
+  public parsedFlags: Record<string, any>;
+
+  public getVariable(key: string) {
     return Object.prototype.hasOwnProperty.call(this.variables, key) ? this.variables[key] : resolveVariable(key);
   }
-  prepare(handler = CommandHandler, args: string[], variables: Record<string, string>) {
+
+  public prepare(handler = CommandHandler, args: string[], variables: Record<string, string>) {
     this.args = args;
     this.context = handler;
     this.variables = variables;
     return this;
   }
+
   abstract invoke(): PotentialPromise<CommandResult>;
 }

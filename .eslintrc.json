@@ -15,6 +15,7 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-unused-vars": "off", // ts already does this
     "@typescript-eslint/no-floating-promises": ["warn", { "ignoreVoid": true }],
     //"@typescript-eslint/restrict-template-expressions": ["warn", { "allowNumber": true }],
     "prefer-template": "warn",
